@@ -2,16 +2,24 @@
 import React from 'react';
 import './App.scss';
 
-// import usersFromServer from './api/users';
-// import categoriesFromServer from './api/categories';
-// import productsFromServer from './api/products';
+import usersFromServer from './api/users';
+import categoriesFromServer from './api/categories';
+import productsFromServer from './api/products';
 
-// const products = productsFromServer.map((product) => {
-//   const category = null; // find by product.categoryId
-//   const user = null; // find by category.ownerId
+// Функція для пошуку категорії за id
+const category = categoryId =>
+  categoriesFromServer.find(cat => cat.id === categoryId);
 
-//   return null;
-// });
+const productsFullData = productsFromServer.map(product => {
+  const cat = category(product.categoryId);
+  const owner = usersFromServer.find(usr => usr.id === cat?.ownerId);
+
+  return {
+    ...product,
+    category: cat || null,
+    user: owner || null,
+  };
+});
 
 export const App = () => (
   <div className="section">
@@ -28,7 +36,7 @@ export const App = () => (
             </a>
 
             <a data-cy="FilterUser" href="#/">
-              User 1
+              {productsFullData[0].user.name}
             </a>
 
             <a data-cy="FilterUser" href="#/" className="is-active">
