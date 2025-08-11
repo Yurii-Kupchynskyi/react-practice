@@ -1,11 +1,11 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
-import React from 'react';
+import React, { useState } from 'react';
 import './App.scss';
 
 import usersFromServer from './api/users';
 import categoriesFromServer from './api/categories';
 import productsFromServer from './api/products';
-
+import { ProductsTableData } from './components/ProductsTableData';
 // Функція для пошуку категорії за id
 const category = categoryId =>
   categoriesFromServer.find(cat => cat.id === categoryId);
@@ -22,6 +22,11 @@ const productsFullData = productsFromServer.map(product => {
 });
 
 export const App = () => {
+  const [search, setSearch] = useState('');
+  const filteredProducts = productsFullData.filter(product => {
+    return product.name.toLowerCase().includes(search.trim().toLowerCase());
+  });
+
   return (
     <div className="section">
       <div className="container">
@@ -53,21 +58,25 @@ export const App = () => {
                   type="text"
                   className="input"
                   placeholder="Search"
-                  value="qwe"
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
                 />
 
                 <span className="icon is-left">
                   <i className="fas fa-search" aria-hidden="true" />
                 </span>
 
-                <span className="icon is-right">
-                  {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
-                  <button
-                    data-cy="ClearButton"
-                    type="button"
-                    className="delete"
-                  />
-                </span>
+                {search && (
+                  <span className="icon is-right">
+                    {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
+                    <button
+                      data-cy="ClearButton"
+                      type="button"
+                      className="delete"
+                      onClick={() => setSearch('')}
+                    />
+                  </span>
+                )}
               </p>
             </div>
 
@@ -104,9 +113,11 @@ export const App = () => {
         </div>
 
         <div className="box table-container">
-          <p data-cy="NoMatchingMessage">
-            No products matching selected criteria
-          </p>
+          {filteredProducts.length === 0 && (
+            <p data-cy="NoMatchingMessage">
+              No products matching selected criteria
+            </p>
+          )}
 
           <table
             data-cy="ProductTable"
@@ -159,23 +170,7 @@ export const App = () => {
                 </th>
               </tr>
             </thead>
-
-            <tbody>
-              {productsFullData.map(product => (
-                <tr data-cy="Product" key={product.id}>
-                  <td className="has-text-weight-bold" data-cy="ProductId">
-                    {product.id}
-                  </td>
-
-                  <td data-cy="ProductName">{product.name}</td>
-                  <td data-cy="ProductCategory">{`${product.category.icon} - ${product.category.title}`}</td>
-
-                  <td data-cy="ProductUser" className="has-text-link">
-                    {product.user.name}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+            <ProductsTableData products={filteredProducts} />
           </table>
         </div>
       </div>
