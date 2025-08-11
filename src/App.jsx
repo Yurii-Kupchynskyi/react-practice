@@ -23,8 +23,16 @@ const productsFullData = productsFromServer.map(product => {
 
 export const App = () => {
   const [search, setSearch] = useState('');
+  const [selectedUserId, setSelectedUserId] = useState(null);
+
   const filteredProducts = productsFullData.filter(product => {
-    return product.name.toLowerCase().includes(search.trim().toLowerCase());
+    const matchesName = product.name
+      .toLowerCase()
+      .includes(search.trim().toLowerCase());
+    const matchesUser =
+      selectedUserId === null || product.user?.id === selectedUserId;
+
+    return matchesName && matchesUser;
   });
 
   return (
@@ -36,15 +44,27 @@ export const App = () => {
           <nav className="panel">
             <p className="panel-heading">Filters</p>
             <p className="panel-tabs has-text-weight-bold">
-              <a data-cy="FilterAllUsers" href="#/">
+              <a
+                data-cy="FilterAllUsers"
+                href="#/"
+                className={selectedUserId === null ? 'is-active' : ''}
+                onClick={e => {
+                  e.preventDefault();
+                  setSelectedUserId(null);
+                }}
+              >
                 All
               </a>
               {usersFromServer.map(user => (
                 <a
                   data-cy="FilterUser"
                   href="#/"
-                  // className="is-active"
+                  className={selectedUserId === user.id ? 'is-active' : ''}
                   key={user.id}
+                  onClick={e => {
+                    e.preventDefault();
+                    setSelectedUserId(user.id);
+                  }}
                 >
                   {user.name}
                 </a>
@@ -105,6 +125,10 @@ export const App = () => {
                 data-cy="ResetAllButton"
                 href="#/"
                 className="button is-link is-outlined is-fullwidth"
+                onClick={() => {
+                  setSearch('');
+                  setSelectedUserId(null);
+                }}
               >
                 Reset all filters
               </a>
